@@ -9,9 +9,7 @@ def check_report(report):
     elif a > b:
         direction = "down"
     elif a == b:
-        direction = "same"
-        report.pop(1)
-        return report
+        return [report, "fail"]
 
     start = report[0]
     i=1
@@ -21,19 +19,16 @@ def check_report(report):
                 start = report[i]
                 i += 1
             else:
-                report.pop(i)
-                return report
+                return [report, "fail"]
 
         elif direction == "down":
             if report[i] == start - 1 or report[i] == start - 2 or report[i] == start - 3:
                 start = report[i]
                 i += 1
             else:
-                report.pop(i)
-                return report
+                return [report, "fail"]
     
-    return report
-
+    return [report, "pass"]
 
 
 f = open("input.txt", "r")
@@ -45,28 +40,27 @@ passed = 0
 
 for line in f.read().splitlines():
     report = [int(x) for x in line.split()]
-    original_report = report.copy()
-    processed_report = check_report(report)
-    
-    if original_report == processed_report:
+    result = check_report(report)
+
+    if result[1] == "pass":
         passed += 1
     else:
-        reprocess_queue.append(processed_report)
+        reprocess_queue.append(result[0])
 
-redo = len(reprocess_queue)
-print(f"Finished first pass - success = {passed}, reprocess = {redo}")
-
-# Reruns
+# Reprocess those that failed, brutally
 
 for rerun in reprocess_queue:
-    original_rerun = rerun.copy()
-    processed_rerun = check_report(rerun)
-
-    if original_rerun == processed_rerun:
-        passed += 1
-        #print(original_rerun, processed_rerun)
-    else:
-        print(original_rerun, processed_rerun)
-        True
+    length = len(rerun)
+    i = 0
+    while i < length:
+        rerun_bkp = rerun.copy()
+        rerun.pop(i)
+        result = check_report(rerun)
+        if result[1] == "pass":
+            passed += 1
+            break
+        else:
+            rerun = rerun_bkp.copy()
+            i += 1
 
 print(passed)
